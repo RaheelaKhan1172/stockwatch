@@ -1,0 +1,26 @@
+{
+  "name": "stockwatch",
+  "version": "1.0.0",
+  "description": "analyzes your stock choices in real time",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "angular.js",
+    "node.js",
+    "javascript",
+    "html",
+    "bootstrap",
+    "express.js",
+    "mongodb",
+    "mongoose"
+  ],
+  "author": "raheela khan",
+  "license": "MIT",
+  "dependencies": {
+    "body-parser": "^1.15.0",
+    "ejs": "^2.4.1",
+    "express": "^4.13.4"
+  }
+}
