@@ -6,101 +6,150 @@ angular.module('main').controller('MainController', ['$scope', 'Stocks',
           stock:''
       };
       
-     var fixGraph = function(chartData,data) {
+      var chartFixed = false;
+      
+      var fixGraph = function(chartData,data) {
+         chartFixed = true;
           console.log(chartData);
-        var chart = AmCharts.makeChart("chartdiv", {
+         chart = AmCharts.makeChart("chartdiv", {
             "type":"stock",
             "pathToImages":"amstock3/amcharts/images/",
-            "theme": "dark",
+            "theme": "light",
             "marginRight":80,
             "autoMarginOffset":20,
             "dataDateFormat":"YYYY-MM-DD",
             "dataSets":[{
+                "title": chartData[0].symb,
                 "dataProvider":chartData,
                 "fieldMappings":[{
                     "fromField":"value",
                     "toField":"value"
+                }, {
+                    "fromField":"volume",
+                    "toField":"volume"
                 }],
                 "categoryField": "date"
             }],
             "panels": [{
-                stockGraphs:[{
+                "showCategoryAxis": false,
+                "title":"Value",
+                "percentHeight":70,
+                "stockGraphs":[{
                     "id":"graph1",
                     "valueField": "value",
+                    "comparable": true,
+                    "compareField": "value",
+                    "balloonText": "[[title]]: <b>[[value]]</b>",
+                    "compareGraphBalloonText": "[[title]]:<b>[[value]]</b>",
                     "type": "line",
-                    "title":"MyGraph",
-                }]
+                }],
+                "stockLegend":{
+                  "periodValueTextComparing": "[[value]]",  
+                    "periodValueTextRegular": "[[value]]"
+                }
+            }, {
+                "title":"Volume",
+                "percentHeight":30,
+                "stockGraphs":[{
+                    "valueField": "volume",
+                    "type":"column",
+                    "showBalloon":"false",
+                    "fillAlphas":1
+                }],
+                "stockLegend": {
+                    "periodValueTextRegular": "[[value]]"
+                }
             }],
             "panelsSettings": {
                 "startDuration":1
             },
-            
+            "dataSetSelector": {
+                "position": "left"   
+            },
+             "periodSelector": {
+                "position":"left",
+                 "periods": [{
+                     "period": "MM",
+                     "count":1,
+                     "label": "1 month"
+                  }, {
+                    "period": "MM",
+                      "count":3,
+                      "label":"3 months"
+                  }, {
+                      "period":"MM",
+                      "count": 6,
+                      "label": "6 months"
+                  }, {
+                      "period": "YYYY",
+                      "count": 1,
+                      "label": "1 year",
+                      "selected": true
+                  }]
+             },
             "categoryAxesSettings":{
                 "equalSpacing":true,
                 "dashLength":5
             },
+             
+            "chartScrollbarSettings": {
+                "graph": "graph1"
+            },
+             
             "valueAxesSettings": {
                 "dashLength":5
             },
             "chartCursorSettings":{
-                "valueBalloonsEnabled": true
+                "valueBalloonsEnabled": true,
+                "valueLineBalloonEnabled": true,
+                "fullWidth":true,
+                "cursorAlpha":0.1,
+                "valueLineEnabled":true,
+                "valueLineAlpha":0.5
             }
         });    
-        
-    /*    var chart = new AmCharts.AmStockChart(); 
-        chart.pathToImages = "amstock3/amcharts/images";
-         chart.type = "serial";
-        chart.theme = "light";
-        //change to multiple data sets later
-        var dataSet = new AmCharts.DataSet();
-        chart.dataDateFormat = "YYYY-MM-DD";
-        dataSet.dataProvider = chartData;
-        dataSet.fieldMappings = [{fromField:"value", toField:"value"},{fromField:"date", toField:"date"}];
-        dataSet.categoryField = "date";
-        chart.dataSets = [dataSet];
-        
-          
-          var stockPanel = new AmCharts.StockPanel();
-                chart.panels = [stockPanel];
-
-                var panelsSettings = new AmCharts.PanelsSettings();
-                panelsSettings.startDuration = 1;
-                chart.panelsSettings = panelsSettings;   
-
-                var graph = new AmCharts.StockGraph();
-                graph.valueField = "value";
-                graph.type = "line";
-                graph.fillAlphas = 1;
-                graph.id = "g1";
-                graph.balloonText = "[[category]]<br><b><span style='font-size:14px;'>value:[[value]]</span></b>";
-                graph.bullet = "round";
-                graph.dashLength = 3;
-                graph.colorField = "color";
-                graph.valueField = "value";
-              
-                stockPanel.addStockGraph(graph);
-
-                chart.write("chartdiv"); */
-          
       } 
+      
+      var fixMultGraph = function(chartData) {
+          var data = {
+              "title": chartData[0].symb,
+                "dataProvider":chartData,
+                "fieldMappings":[{
+                    "fromField":"value",
+                    "toField":"value"
+                }, {
+                    "fromField":"volume",
+                    "toField":"volume"
+                }],
+                "categoryField": "date",
+          };
+          
+          chart.dataSets.push(data);
+          chart.write("chartdiv");
+        console.log(chart,chart.dataSets,chart.cname);
+      };
       
       var fixData = function(data) {
         var chartData = data.map(function(a,i) {
             return {
                 "date":a.Date,
-                "value": a.Close.substr(0,5)
+                "value": a.Close.substr(0,5),
+                "volume": a.Volume,
+                "symb": a.Symbol
             }
         });
           chartData = chartData.reverse();
-          fixGraph(chartData,data);
+          if (chartFixed) {
+              //call another function to append new data set;
+              fixMultGraph(chartData);
+          } else {
+            fixGraph(chartData,data);
+          }
       };
       
-          
-          
-          
-      
+
       $scope.search = function() {
-          var stock = new Stocks($scope.symbol);
+          var stock = new Stocks($scope.stockData);
           stock.$save(function(response) {
               console.log(response);
               fixData(response.toSend);

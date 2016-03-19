@@ -3,13 +3,16 @@ var YQL = require('yql');
 exports.search = function(req,res) {
     
     var toSend = {};
-    
-    var url = "select * from yahoo.finance.historicaldata where symbol = 'YHOO' and startDate = '2016-02-16' and endDate = '2016-03-16'";
+    var date = new Date();
+    date = date.toISOString();
+    date = date.slice(0,date.lastIndexOf('T'));
+    var oldYear = (date.slice(0,4)-1) + date.slice(4,8) + (date.slice(8)-4);
+    console.log(date,oldYear);
+    var url = "select * from yahoo.finance.historicaldata where symbol = '" + req.body.stock.toUpperCase() + "' and startDate = '" + oldYear + "' and endDate = '" + date + "'";
     
     var query = new YQL(url);
     
     query.exec(function(err,response) {
-       
        if (err) {
            return res.status(400).send({
                message: err
@@ -18,7 +21,6 @@ exports.search = function(req,res) {
         for (var prop in response) {
            if(response[prop].results) {
                var toSend = response[prop].results.quote;
-               console.log(response[prop].results);
                res.send({toSend});
            }
         }
