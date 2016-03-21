@@ -1,5 +1,5 @@
-angular.module('main').controller('MainController', ['$scope', 'Stocks',
-  function($scope,Stocks) {
+angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
+  function($scope,$http,Stocks) {
 
       
       $scope.stockData = {
@@ -130,6 +130,7 @@ angular.module('main').controller('MainController', ['$scope', 'Stocks',
       };
       
       var fixData = function(data) {
+          console.log('in fix',data);
         var chartData = data.map(function(a,i) {
             return {
                 "date":a.Date,
@@ -158,6 +159,16 @@ angular.module('main').controller('MainController', ['$scope', 'Stocks',
           });
       }
       
- 
+    $scope.find = function() {
+        $http({
+            method: 'GET',
+            url: '/stocks'
+        }).then(function(response) {
+           // console.log(response.data.toSend,'hi');
+            fixData(response.data.toSend);
+        }, function(error) {
+            console.log('hi',error);
+        });
+    };
       
   }]);

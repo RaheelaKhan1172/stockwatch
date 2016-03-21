@@ -1,4 +1,4 @@
-<section data-ng-controller="MainController">
+<section data-ng-controller="MainController" data-ng-init="find()">
     <form novalidate ng-submit="search()">
         <input type="text" ng-model="stockData.stock">
         <input type="submit">
