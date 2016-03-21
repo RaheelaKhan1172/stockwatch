@@ -12,15 +12,18 @@ exports.list = function(req,res) {
                 message: err
             });
         } else {
-            console.log('hi',document);
-            exports.search(req,res,document);
+            if (document.length) {
+                console.log('hi',document);
+                exports.search(req,res,document);
+            } else {
+                res.send({toSend:null});
+            }
         }
     });
 };
 //search + save stock
 exports.search = function(req,res,extra) {
-    console.log('hm well hi',extra,extra.Symbol,extra.length);
-    var m = 0;
+   
     
   /*  function checkIfDone(stock,length) {
         m+=1;
@@ -48,25 +51,36 @@ exports.search = function(req,res,extra) {
                 checkIfDone(stock,length)
             }
         });
-    }
+    } */
     
-    function queryData(data,length) {
-        for (var prop in data) {
-            Stock.find({ Symbol:data[prop].Symbol },function(err,document) {
+    function queryData(toSend) {
+            Stock.findOne({ Symbol:toSend[0].Symbol },function(err,document) {
                if (document) {
-                    console.log(document[0].Date);
+                   console.log(document, 'in here');
+                    res.json({toSend})
                } else {
-                   var stock = new Stock({ Symbol:data[prop].Symbol, Date: data[prop].Date, Close: data[prop].Close, Volume: data[prop].Volume });
-                   saveData(stock,length);
+                   console.log('hi again');
+                   var stock = new Stock({ Symbol:toSend[0].Symbol});
+                   stock.save(function(err) {
+                     if (err) {
+                       res.status(400).send({
+                         message: err
+                       }); 
+                     } else {
+                       res.json({toSend});
+                     }
+                   });
                }
             });
 
-        }
-    } */
+        };
+    var html = '';
+    var m = 0;
     var searchItem = [];
-    
-    if (extra === undefined) {
-        searchItem = req.body.stock.toUpperCase();    
+    console.log('hm',req.body.stock);
+    if (req.body.stock) {
+        searchItem = req.body.stock.toUpperCase();
+        console.log('hello this should work')
     } else {
         for (var i = 0; i < extra.length; i++) {
             console.log(extra[i],'hiiiii');
@@ -74,18 +88,28 @@ exports.search = function(req,res,extra) {
                 searchItem.push(extra[i].Symbol);
             }
         }
+        for (var i = 0; i < searchItem.length; i++) {
+            if (i === searchItem.length-1) {
+                html += "'"+searchItem[i] + "'";
+            } else {
+                html += "'"+ searchItem[i] + "',"
+            }
+        }
+        console.log('hewwo', html);
     }
     
-    searchItem = searchItem.join();
-    console.log(searchItem);
+    
+    console.log(searchItem,html);
     var toSend = {};
     var date = new Date();
     date = date.toISOString();
     date = date.slice(0,date.lastIndexOf('T'));
     var oldYear = (date.slice(0,4)-1) + date.slice(4,8) + (date.slice(8)-4);
     console.log(date,oldYear);
-    var url = "select * from yahoo.finance.historicaldata where symbol = '" + searchItem + "' and startDate = '" + oldYear + "' and endDate = '" + date + "'";
     
+    var url =  (html)?  "select * from yahoo.finance.historicaldata where symbol in (" + html + ") and startDate = '" + oldYear + "' and endDate = '" + date + "'" : "select * from yahoo.finance.historicaldata where symbol = '" + searchItem + "' and startDate = '" + oldYear + "' and endDate = '" + date + "'";
+    
+    console.log(url);
     var query = new YQL(url);
     
     query.exec(function(err,response) {
@@ -97,10 +121,14 @@ exports.search = function(req,res,extra) {
         for (var prop in response) {
            if(response[prop].results) {
                var length = response[prop].results.quote.length;
-               console.log(length);
-               var toSend = response[prop].results.quote;
+               toSend = response[prop].results.quote;
                //changed d.b-- will store symbol only and send result back;
-               var stock = new Stock({Symbol: toSend[0].Symbol});
+           
+           }
+        }
+                console.log('the length', length);
+               queryData(toSend);
+            /*   var stock = new Stock({Symbol: toSend[0].Symbol});
                stock.save(function(err) {
                    if (err) {
                        res.status(400).send({
@@ -109,12 +137,11 @@ exports.search = function(req,res,extra) {
                    } else {
                        res.json({toSend});
                    }
-               });
+               });*/
                
                //queryData(toSend,length);
            }
-        }
-       }
+   
     });
     
     //end send

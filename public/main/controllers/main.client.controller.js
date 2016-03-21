@@ -164,8 +164,10 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
             method: 'GET',
             url: '/stocks'
         }).then(function(response) {
-           // console.log(response.data.toSend,'hi');
-            fixData(response.data.toSend);
+            console.log(response,'hi');
+            if (response.data.toSend !== null) {
+                fixData(response.data.toSend);
+            }
         }, function(error) {
             console.log('hi',error);
         });
