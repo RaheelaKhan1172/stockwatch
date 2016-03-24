@@ -2,7 +2,7 @@
 
 var mainApplicationModuleName = 'stockwatch';
 
-var mainApplicationModule = angular.module(mainApplicationModuleName,['ngResource','ngRoute','main']);
+var mainApplicationModule = angular.module(mainApplicationModuleName,['ngResource','ngRoute','emit','main']);
 
 mainApplicationModule.config(['$locationProvider', function($locationProvider) {
     $locationProvider.hashPrefix('!');

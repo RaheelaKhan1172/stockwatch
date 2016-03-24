@@ -23,12 +23,15 @@ exports.list = function(req,res) {
     });
 };
 
-//search + save stock
 
-
-exports.response = function(socket) {
+exports.response = function(io,socket) {
     //socket emit stuff
-    socket.emit('stuff', {msg:'oh hey how;s it going'});
+   socket.on('theCurrentStocks', function(message) {
+       console.log('message in server',message);
+       io.emit('theCurrentStocks', message);
+   });
+    
+   
 };
 
 exports.search = function(req,res,extra) {
@@ -93,7 +96,7 @@ exports.search = function(req,res,extra) {
     console.log('hm',req.body.stock);
     
     if (req.body.stock) {
-        searchItem = req.body.stock.toUpperCase();
+        searchItem.push(req.body.stock.toUpperCase());
         console.log('hello this should work')
     } else {
         for (var i = 0; i < extra.length; i++) {
@@ -140,7 +143,13 @@ exports.search = function(req,res,extra) {
            }
         }
                 console.log('the length', length);
+           if (length === undefined) {
+               res.status(400).send({
+                   message: "That stock doesn't exist!"
+               });
+           } else {
                queryData(toSend);
+           }
             /*   var stock = new Stock({Symbol: toSend[0].Symbol});
                stock.save(function(err) {
                    if (err) {

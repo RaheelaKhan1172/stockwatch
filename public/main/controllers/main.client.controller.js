@@ -1,12 +1,39 @@
-angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
-  function($scope,$http,Stocks) {
+angular.module('main').controller('MainController', ['$scope', '$http','Stocks', 'Socket',
+  function($scope,$http,Stocks,Socket) {
 
       
       $scope.stockData = {
           stock:''
       };
       
+      
+      
       var chartFixed = false;
+      
+      //socket //
+      
+      $scope.currentStocks = [];
+      //display
+      Socket.on('theCurrentStocks', function(data) {
+         $scope.currentStocks.push(data.stock.toUpperCase()); 
+          console.log('the client data', data);
+      });
+      
+      $scope.sendStockRequest = function() {
+          
+          var message = {
+            stock: $scope.stockData.stock  
+          };
+          console.log('message in client',message);
+          Socket.emit('theCurrentStocks', message);
+          
+      };
+      
+      $scope.$on('$destroy', function() {
+         Socket.removeListener('theCurrentStocks'); 
+      });
+      
+      /* ..end socket ..*/
       
       var fixGraph = function(chartData) {
          chartFixed = true;
@@ -124,6 +151,7 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
                 }],
                 "categoryField": "date",
           };
+          
           console.log('i got called');
           chart.dataSets.push(data);
           chart.write("chartdiv");
@@ -144,6 +172,7 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
           
           //change later so that all data gets appended at o
           chartData = chartData.reverse();
+          $scope.currentStocks.push(chartData[0].symb);
        //   console.log('after',chartData);
           if (chartFixed) {
               //call another function to append new data set;
@@ -185,7 +214,6 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
     
     // will only occur on initial page load to load data from d.b and display on graph
     $scope.find = function() {
-        
         $http({
             method: 'GET',
             url: '/stocks'
@@ -196,7 +224,7 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
                 splitData(response.data.toSend);
            }
         }, function(error) {
-            console.log('hi',error);
+            $scope.error = error.data.message;
         });
     }; 
       
