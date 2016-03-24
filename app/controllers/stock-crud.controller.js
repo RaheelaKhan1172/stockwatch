@@ -1,10 +1,11 @@
 
 var Stock = require('mongoose').model('Stock');
 var YQL = require('yql');
-
+var socket = require('socket.io');
+var toSend = {};
 
 exports.list = function(req,res) {
-    console.log('hello');
+
     Stock.find({}, function(err,document) {
         console.log('well hi',document);
         if (err) {
@@ -21,7 +22,15 @@ exports.list = function(req,res) {
         }
     });
 };
+
 //search + save stock
+
+
+exports.response = function(socket) {
+    //socket emit stuff
+    socket.emit('stuff', {msg:'oh hey how;s it going'});
+};
+
 exports.search = function(req,res,extra) {
    
     
@@ -56,28 +65,33 @@ exports.search = function(req,res,extra) {
     function queryData(toSend) {
             Stock.findOne({ Symbol:toSend[0].Symbol },function(err,document) {
                if (document) {
-                   console.log(document, 'in here');
-                    res.json({toSend})
+                   toSend[0].stocks = searchItem;
+                    res.json({toSend});
                } else {
                    console.log('hi again');
                    var stock = new Stock({ Symbol:toSend[0].Symbol});
+                   searchItem.push(stock.Symbol);
+                   toSend[0].stocks = searchItem;
                    stock.save(function(err) {
                      if (err) {
                        res.status(400).send({
                          message: err
                        }); 
                      } else {
-                       res.json({toSend});
+                         console.log('hi');
+                         res.json({toSend});
                      }
                    });
                }
             });
 
         };
+    
     var html = '';
     var m = 0;
     var searchItem = [];
     console.log('hm',req.body.stock);
+    
     if (req.body.stock) {
         searchItem = req.body.stock.toUpperCase();
         console.log('hello this should work')
@@ -100,7 +114,6 @@ exports.search = function(req,res,extra) {
     
     
     console.log(searchItem,html);
-    var toSend = {};
     var date = new Date();
     date = date.toISOString();
     date = date.slice(0,date.lastIndexOf('T'));

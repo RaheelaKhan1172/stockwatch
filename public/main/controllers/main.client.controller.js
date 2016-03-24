@@ -8,9 +8,9 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
       
       var chartFixed = false;
       
-      var fixGraph = function(chartData,data) {
+      var fixGraph = function(chartData) {
          chartFixed = true;
-          console.log(chartData);
+   //       console.log('the data',chartData)
          chart = AmCharts.makeChart("chartdiv", {
             "type":"stock",
             "pathToImages":"amstock3/amcharts/images/",
@@ -108,6 +108,7 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
                 "valueLineAlpha":0.5
             }
         });    
+          return;
       } 
       
       var fixMultGraph = function(chartData) {
@@ -123,15 +124,16 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
                 }],
                 "categoryField": "date",
           };
-          
+          console.log('i got called');
           chart.dataSets.push(data);
           chart.write("chartdiv");
-        console.log(chart,chart.dataSets,chart.cname);
+ //       console.log(chart,chart.dataSets,chart.cname);
+          return;
       };
       
       var fixData = function(data) {
-          console.log('in fix',data);
-        var chartData = data.map(function(a,i) {
+     //     console.log('in fix',data);
+       var chartData = data.map(function(a,i) {
             return {
                 "date":a.Date,
                 "value": a.Close.substr(0,5),
@@ -139,16 +141,38 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
                 "symb": a.Symbol
             }
         });
+          
+          //change later so that all data gets appended at o
           chartData = chartData.reverse();
+       //   console.log('after',chartData);
           if (chartFixed) {
               //call another function to append new data set;
               fixMultGraph(chartData);
           } else {
-            fixGraph(chartData,data);
+            fixGraph(chartData);
           }
+          return;
       };
       
-
+      var splitData = function(data) {
+         /*   var dlength = 0;
+            var currentSym = data[0].Symbol
+            console.log(currentSym)
+            for (var i = 0; i < data.length; i+=252) {
+                if (currentSym !== data[i].Symbol) {
+                    dlength+=1
+                }
+            }*/
+          
+          
+            for (var i = 0, k = 255; i < data.length; i+=255) {
+                
+                fixData(data.slice(i,k));
+                k+=255;
+            }
+          
+      }
+      
       $scope.search = function() {
           var stock = new Stocks($scope.stockData);
           stock.$save(function(response) {
@@ -158,19 +182,22 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
               $scope.error = error.data.message;
           });
       }
-      
+    
+    // will only occur on initial page load to load data from d.b and display on graph
     $scope.find = function() {
+        
         $http({
             method: 'GET',
             url: '/stocks'
         }).then(function(response) {
-            console.log(response,'hi');
+            
             if (response.data.toSend !== null) {
-                fixData(response.data.toSend);
-            }
+                console.log(response.data);
+                splitData(response.data.toSend);
+           }
         }, function(error) {
             console.log('hi',error);
         });
-    };
+    }; 
       
   }]);
