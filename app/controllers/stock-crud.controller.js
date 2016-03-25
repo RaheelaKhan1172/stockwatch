@@ -4,6 +4,8 @@ var YQL = require('yql');
 var socket = require('socket.io');
 var toSend = {};
 
+
+
 exports.list = function(req,res) {
 
     Stock.find({}, function(err,document) {
@@ -27,11 +29,18 @@ exports.list = function(req,res) {
 exports.response = function(io,socket) {
     //socket emit stuff
    socket.on('theCurrentStocks', function(message) {
+
+
        console.log('message in server',message);
        io.emit('theCurrentStocks', message);
    });
     
-   
+ /* socket.on('removed', function(message) {
+      console.log('remove message', message);
+      io.emit('removed', message);
+  }); */
+    
+
 };
 
 exports.search = function(req,res,extra) {
@@ -169,3 +178,20 @@ exports.search = function(req,res,extra) {
     //end send
     
 }; //end search
+
+
+
+exports.delete = function(req,res) {
+  console.log('hi in delete', req.body.stock);  
+    
+  Stock.findOneAndRemove({Symbol: req.body.stock}, function(err,document) {
+      if (err) {
+          res.status(400).send({
+              message:err
+          });
+      } else {
+          console.log('deleted');
+          res.json(document);
+      }
+  });
+};

@@ -5,7 +5,8 @@
     </form>
     <div id="chartdiv" style="width:100%; height:400px;"></div>
     <h1> currently comparing..</h1>
-    <h3 data-ng-bind="currentStocks[0]"></h3>
+    
+    <h3 data-ng-bind="currentStocks[0]" ng-click="stockRemoved(currentStocks[0])"></h3>
     <div data-ng-show="error">
         <span data-ng-bind="error"></span>
     </div>

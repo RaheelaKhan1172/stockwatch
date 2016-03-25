@@ -4,6 +4,7 @@ module.exports = function(app) {
     //main route
     app.route('/')
     .get(index.render)
-    .post(stock.search);
+    .post(stock.search)
+    .delete(stock.delete);
     
 };

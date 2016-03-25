@@ -13,11 +13,38 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
       //socket //
       
       $scope.currentStocks = [];
+      console.log('before',$scope.currentStocks);
       //display
+      
       Socket.on('theCurrentStocks', function(data) {
-         $scope.currentStocks.push(data.stock.toUpperCase()); 
+          if (data.removed) {
+              $scope.currentStocks.splice($scope.currentStocks.indexOf(data.stock),1);
+              removeFromGraph(data.stock);
+          } else {
+              $scope.currentStocks.push(data.stock.toUpperCase()); 
+          }
           console.log('the client data', data);
       });
+      
+  /*    Socket.on('removed', function(data) {
+          console.log('remove in client',data);
+          var toTarget = $scope.currentStocks.indexOf(data.stock);
+          $scope.currentStocks.splice(toTarget,1);
+          removeFromGraph(data.stock);
+          console.log('result',$scope.currentStocks);
+      });*/
+      
+      $scope.stockRemoved = function(data) {
+            //call remove function
+          console.log('stock removed in client',data)
+          var message = {
+              stock: data,
+              removed: true
+          };
+          Socket.emit('theCurrentStocks', message);
+          $scope.currentStocks.splice($scope.currentStocks.indexOf(data), 1);
+          deleteStock(data);
+      };
       
       $scope.sendStockRequest = function() {
           
@@ -30,10 +57,15 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
       };
       
       $scope.$on('$destroy', function() {
-         Socket.removeListener('theCurrentStocks'); 
+          Socket.removeListener('theCurrentStocks'); 
+    //      Socket.removeListener('removed');
       });
       
       /* ..end socket ..*/
+      
+      var removeFromGraph = function(data) {
+          console.log('datasets', chart.dataSets);
+      };
       
       var fixGraph = function(chartData) {
          chartFixed = true;
@@ -227,5 +259,23 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
             $scope.error = error.data.message;
         });
     }; 
+    
+    var deleteStock = function(name) {
+        console.log(name);
+        //call socketIo to remove stuff;
+        
+        $http({
+            url:'/',
+            method: 'DELETE',
+            data: { stock: name},
+            headers: {"Content-Type": "application/json;charset=utf-8"}
+        }).then(function(response) {
+            console.log(response);
+           // stockRemoved(response.data.Symbol);
+        }, function(error) {
+            $scope.error = error.data.message;
+        });
+          
+    };
       
   }]);
