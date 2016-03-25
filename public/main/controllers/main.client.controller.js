@@ -46,24 +46,26 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
               stock: data,
               removed: true
           };
+          
           Socket.emit('theCurrentStocks', message);
   //        $scope.currentStocks.splice($scope.currentStocks.indexOf(data), 1);
           deleteStock(data);
       };
       
       $scope.sendStockRequest = function() {
-          
-          var message = {
+          if ($scope.currentStocks.indexOf($scope.stockData.stock.toUpperCase()) === -1) {
+            var message = {
             stock: $scope.stockData.stock  
           };
           
           console.log('message in client',message);
           Socket.emit('theCurrentStocks', message);
-          
+          }
       };
       
       $scope.$on('$destroy', function() {
           Socket.removeListener('theCurrentStocks'); 
+          Socket.disconnect();
     //      Socket.removeListener('removed');
       });
       
@@ -189,7 +191,7 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
       } 
       
       var fixMultGraph = function(chartData) {
-          console.log('chartData in fix mult graph',chartData);
+      //    console.log('chartData in fix mult graph',chartData);
           var data = {
               "title": chartData[0].symb,
                 "dataProvider":chartData,
@@ -221,7 +223,6 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
             }
         });
           
-          //change later so that all data gets appended at o
           chartData = chartData.reverse();
           if ($scope.currentStocks.indexOf(chartData[0].symb) === -1) {
             console.log('hi in here', $scope.currentStocks, chartData[0].symb)
@@ -247,16 +248,19 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
                 }
             }*/
           
-          
-            for (var i = 0, k = 255; i < data.length; i+=255) {
+          for (var i = 0; i < data.length; i++ ) {
+              fixData(data[i]);
+          };
+         /*   for (var i = 0, k = 255; i < data.length; i+=255) {
                 
                 fixData(data.slice(i,k));
                 k+=255;
-            }
+            } */
           
       }
       
       $scope.search = function() {
+       if ($scope.currentStocks.indexOf($scope.stockData.stock.toUpperCase()) === -1) {      
           var stock = new Stocks($scope.stockData);
           stock.$save(function(response) {
               console.log('ohho',response);
@@ -264,7 +268,8 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
           }, function(error) {
               $scope.error = error.data.message;
           });
-      }
+       }
+      };
     
     // will only occur on initial page load to load data from d.b and display on graph
     $scope.find = function() {
@@ -273,9 +278,9 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
             url: '/stocks'
         }).then(function(response) {
             
-            if (response.data.toSend !== null) {
-                console.log('hehe',response.data);
-                splitData(response.data.toSend);
+            if (response.data.tempArr !== null) {
+              
+                splitData(response.data.tempArr);
            }
         }, function(error) {
             $scope.error = error.data.message;
@@ -284,7 +289,6 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
     
     var deleteStock = function(name) {
         console.log(name);
-        //call socketIo to remove stuff;
         
         $http({
             url:'/',
