@@ -10,7 +10,11 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
       
       var chartFixed = false;
       
-      //socket //
+      /* ..
+        ..
+        Socket 
+        
+        .. */
       
       $scope.currentStocks = [];
       console.log('before',$scope.currentStocks);
@@ -21,9 +25,10 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
               $scope.currentStocks.splice($scope.currentStocks.indexOf(data.stock),1);
               removeFromGraph(data.stock);
           } else {
-              $scope.currentStocks.push(data.stock.toUpperCase()); 
+              $scope.currentStocks.push(data.stock.toUpperCase()) ; 
+              console.log('scope currentstocks', $scope.currentStocks);
           }
-          console.log('the client data', data);
+          console.log('the client data', $scope.currentStocks);
       });
       
   /*    Socket.on('removed', function(data) {
@@ -42,7 +47,7 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
               removed: true
           };
           Socket.emit('theCurrentStocks', message);
-          $scope.currentStocks.splice($scope.currentStocks.indexOf(data), 1);
+  //        $scope.currentStocks.splice($scope.currentStocks.indexOf(data), 1);
           deleteStock(data);
       };
       
@@ -51,6 +56,7 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
           var message = {
             stock: $scope.stockData.stock  
           };
+          
           console.log('message in client',message);
           Socket.emit('theCurrentStocks', message);
           
@@ -64,7 +70,19 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
       /* ..end socket ..*/
       
       var removeFromGraph = function(data) {
-          console.log('datasets', chart.dataSets);
+          console.log('datasets', chart.dataSets,chart.dataSets[0].title,'data to remove', data);
+          
+          for (var i = 0; i < chart.dataSets.length; i++) {
+              if (chart.dataSets[i].title === data) {
+                  chart.dataSets.splice(i,1);
+              }
+          } 
+          
+          if (!chart.dataSets.length) {
+            chartFixed = false;  
+          };
+          console.log('result', chart.dataSets);
+          chart.write("chartdiv");
       };
       
       var fixGraph = function(chartData) {
@@ -171,6 +189,7 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
       } 
       
       var fixMultGraph = function(chartData) {
+          console.log('chartData in fix mult graph',chartData);
           var data = {
               "title": chartData[0].symb,
                 "dataProvider":chartData,
@@ -184,7 +203,7 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
                 "categoryField": "date",
           };
           
-          console.log('i got called');
+          console.log('i got called',$scope.currentStocks);
           chart.dataSets.push(data);
           chart.write("chartdiv");
  //       console.log(chart,chart.dataSets,chart.cname);
@@ -204,7 +223,10 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
           
           //change later so that all data gets appended at o
           chartData = chartData.reverse();
-          $scope.currentStocks.push(chartData[0].symb);
+          if ($scope.currentStocks.indexOf(chartData[0].symb) === -1) {
+            console.log('hi in here', $scope.currentStocks, chartData[0].symb)
+              $scope.currentStocks.push(chartData[0].symb);
+          }
        //   console.log('after',chartData);
           if (chartFixed) {
               //call another function to append new data set;
@@ -237,7 +259,7 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
       $scope.search = function() {
           var stock = new Stocks($scope.stockData);
           stock.$save(function(response) {
-              console.log(response);
+              console.log('ohho',response);
               fixData(response.toSend);
           }, function(error) {
               $scope.error = error.data.message;
@@ -252,7 +274,7 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
         }).then(function(response) {
             
             if (response.data.toSend !== null) {
-                console.log(response.data);
+                console.log('hehe',response.data);
                 splitData(response.data.toSend);
            }
         }, function(error) {
@@ -270,7 +292,7 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
             data: { stock: name},
             headers: {"Content-Type": "application/json;charset=utf-8"}
         }).then(function(response) {
-            console.log(response);
+            console.log('wehe',response);
            // stockRemoved(response.data.Symbol);
         }, function(error) {
             $scope.error = error.data.message;
