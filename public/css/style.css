@@ -1,0 +1,100 @@
+body{
+    background-color:dimgray;
+}
+
+.container{
+    margin-top:30px;
+    width:90%;
+    height:auto;
+    border-radius:20px;
+}
+
+.center-block {
+    display:block;
+    margin-left:auto;
+    margin-right:auto;
+}
+.formGroup {
+    margin-top:10px;
+    margin-bottom:10px;
+}
+.form-control {
+    padding-right:0;
+    overflow: visible;
+    margin-right:-10px;
+    border-radius:10px;
+}
+.form-control:active{
+    box-shadow: mediumpurple;
+}
+
+.submitButton {
+    overflow: visible;
+    margin-right:45px;
+    background-color:palevioletred;
+    border:none;
+    width:45x;
+    height:35px;
+    border-radius:7x;
+    text-align:left;
+    
+}
+#chartdiv {
+    margin-bottom:20px;
+}
+.line {
+    height:20px;
+    width:20px;
+}
+#wait{
+    color: lightgrey;
+    font-family: 'Lobster', cursive;
+}
+
+.loading:after {
+  overflow: hidden;
+  display: inline-block;
+  vertical-align: bottom;
+  -webkit-animation: ellipsis steps(4,end) 900ms infinite;      
+  animation: ellipsis steps(4,end) 900ms infinite;
+  content: "\2026"; /* ascii code for the ellipsis character */
+  width: 0px;
+}
+@keyframes ellipsis {
+    to {
+        width:20px;
+    }
+}
+@-webkit-keyframes ellipsis {
+  to {
+    width: 20px;    
+  }
+}
+.submitButton:hover {
+    background-color:mediumpurple
+}
+
+.stock {
+    background-color:white;
+    border:1px solid palevioletred;
+    border-left-width:5px;
+}
+.fa-arrow-up {
+    color:mediumpurple;
+    margin-top:30px;
+    font-size:50px;
+}
+.fa-spinner {
+    color: mediumpurple;
+    margin-left:50px;
+    margin-top:10px;
+    position:center;
+    font-size: 70px;
+}
+.stock:hover {
+    border-color:mediumpurple;
+}
+
+h1 {
+    color:palevioletred;
+}

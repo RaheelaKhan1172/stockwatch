@@ -5,10 +5,10 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
       $scope.stockData = {
           stock:''
       };
-      
-      
-      
       var chartFixed = false;
+      
+      $scope.dataLoaded = false;
+      $scope.noData = false;
       
       /* ..
         ..
@@ -17,10 +17,10 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
         .. */
       
       $scope.currentStocks = [];
-      console.log('before',$scope.currentStocks);
-      //display
+
       
       Socket.on('theCurrentStocks', function(data) {
+          console.log(data)
           if (data.removed) {
               $scope.currentStocks.splice($scope.currentStocks.indexOf(data.stock),1);
               removeFromGraph(data.stock);
@@ -31,17 +31,8 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
           console.log('the client data', $scope.currentStocks);
       });
       
-  /*    Socket.on('removed', function(data) {
-          console.log('remove in client',data);
-          var toTarget = $scope.currentStocks.indexOf(data.stock);
-          $scope.currentStocks.splice(toTarget,1);
-          removeFromGraph(data.stock);
-          console.log('result',$scope.currentStocks);
-      });*/
-      
       $scope.stockRemoved = function(data) {
             //call remove function
-          console.log('stock removed in client',data)
           var message = {
               stock: data,
               removed: true
@@ -53,12 +44,18 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
       };
       
       $scope.sendStockRequest = function() {
+          if (!chartFixed) {
+                  console.log('hmhmhm');
+                  $scope.noData = false;
+                  $scope.dataLoaded = false;
+           }
+          
           if ($scope.currentStocks.indexOf($scope.stockData.stock.toUpperCase()) === -1) {
             var message = {
             stock: $scope.stockData.stock  
           };
           
-          console.log('message in client',message);
+    //      console.log('message in client',message);
           Socket.emit('theCurrentStocks', message);
           }
       };
@@ -88,12 +85,14 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
       };
       
       var fixGraph = function(chartData) {
-         chartFixed = true;
+            chartFixed = true;
+            $scope.dataLoaded = true;
+            $scope.noData = false;
    //       console.log('the data',chartData)
          chart = AmCharts.makeChart("chartdiv", {
             "type":"stock",
             "pathToImages":"amstock3/amcharts/images/",
-            "theme": "light",
+            "theme": "dark",
             "marginRight":80,
             "autoMarginOffset":20,
             "dataDateFormat":"YYYY-MM-DD",
@@ -205,7 +204,6 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
                 "categoryField": "date",
           };
           
-          console.log('i got called',$scope.currentStocks);
           chart.dataSets.push(data);
           chart.write("chartdiv");
  //       console.log(chart,chart.dataSets,chart.cname);
@@ -213,7 +211,7 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
       };
       
       var fixData = function(data) {
-     //     console.log('in fix',data);
+         
        var chartData = data.map(function(a,i) {
             return {
                 "date":a.Date,
@@ -225,7 +223,6 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
           
           chartData = chartData.reverse();
           if ($scope.currentStocks.indexOf(chartData[0].symb) === -1) {
-            console.log('hi in here', $scope.currentStocks, chartData[0].symb)
               $scope.currentStocks.push(chartData[0].symb);
           }
        //   console.log('after',chartData);
@@ -263,7 +260,7 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
        if ($scope.currentStocks.indexOf($scope.stockData.stock.toUpperCase()) === -1) {      
           var stock = new Stocks($scope.stockData);
           stock.$save(function(response) {
-              console.log('ohho',response);
+              console.log('in search',response);
               fixData(response.toSend);
           }, function(error) {
               $scope.error = error.data.message;
@@ -272,16 +269,21 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
       };
     
     // will only occur on initial page load to load data from d.b and display on graph
+      
     $scope.find = function() {
         $http({
             method: 'GET',
             url: '/stocks'
         }).then(function(response) {
             
-            if (response.data.tempArr !== null) {
-              
+            if (response.data.toSend) {
+                fixData(response.data.toSend);
+            } else if (response.data.tempArr !== null) {
                 splitData(response.data.tempArr);
-           }
+            } else {
+                $scope.noData = true;
+                $scope.dataLoaded=true; //so loading goes away, no data avail
+            } 
         }, function(error) {
             $scope.error = error.data.message;
         });
@@ -296,12 +298,10 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
             data: { stock: name},
             headers: {"Content-Type": "application/json;charset=utf-8"}
         }).then(function(response) {
-            console.log('wehe',response);
+            console.log('in deleteStock',response);
            // stockRemoved(response.data.Symbol);
         }, function(error) {
             $scope.error = error.data.message;
         });
-          
     };
-      
   }]);
