@@ -24,7 +24,8 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
           console.log(data)
           if (data.removed) {
               $scope.currentStocks.splice($scope.currentStocks.indexOf(data.stock),1);
-              removeFromGraph(data.stock);
+           //   removeFromGraph(data.stock);
+              deleteStock(data);
           } else {
               if ($scope.currentStocks.indexOf(data.stock.toUpperCase()) === -1) {
                 $scope.currentStocks.push(data.stock.toUpperCase()) ; 
@@ -44,7 +45,6 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
           
           Socket.emit('theCurrentStocks', message);
   //        $scope.currentStocks.splice($scope.currentStocks.indexOf(data), 1);
-          deleteStock(data);
       };
       
       $scope.sendStockRequest = function() {
@@ -87,6 +87,9 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
           };
           console.log('result', chart.dataSets);
           chart.write("chartdiv");
+          if (chart.dataSets.length === 1) {
+              fixGraph(chart.dataSets[0].dataProvider);
+          }
       };
       
       var fixGraph = function(chartData) {
@@ -192,7 +195,7 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
             }
         });    
           return;
-      } 
+      }; 
       
       var fixMultGraph = function(chartData) {
       //    console.log('chartData in fix mult graph',chartData);
@@ -295,7 +298,7 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
     }; 
     
     var deleteStock = function(name) {
-        console.log(name);
+        console.log('name of stock',name);
         
         $http({
             url:'/',
@@ -303,7 +306,8 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
             data: { stock: name},
             headers: {"Content-Type": "application/json;charset=utf-8"}
         }).then(function(response) {
-            console.log('in deleteStock',response);
+            console.log('in deleteStock',response,response.data.Symbol);
+            removeFromGraph(response.data.Symbol)
            // stockRemoved(response.data.Symbol);
         }, function(error) {
             $scope.error = error.data.message;

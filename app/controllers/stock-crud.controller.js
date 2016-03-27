@@ -164,8 +164,10 @@ exports.search = function(req,res,extra) {
 
 exports.delete = function(req,res) {
   console.log('hi in delete', req.body.stock);  
-    
-  Stock.findOneAndRemove({Symbol: req.body.stock}, function(err,document) {
+    console.log(req.body.stock.stock,'below');
+    var removethis = req.body.stock.stock
+    console.log(removethis);
+  Stock.findOneAndRemove({Symbol: removethis}, function(err,document) {
       if (err) {
           res.status(400).send({
               message:err
