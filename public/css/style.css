@@ -2,7 +2,7 @@ body{
     background-color:dimgray;
 }
 
-.container{
+.container {
     margin-top:30px;
     width:90%;
     height:auto;
@@ -14,38 +14,35 @@ body{
     margin-left:auto;
     margin-right:auto;
 }
+
 .formGroup {
     margin-top:10px;
     margin-bottom:10px;
 }
-.form-control {
-    padding-right:0;
-    overflow: visible;
-    margin-right:-10px;
-    border-radius:10px;
+
+.form-control .input-group {
+    display:table-cell;
 }
+
+
 .form-control:active{
     box-shadow: mediumpurple;
 }
 
 .submitButton {
-    overflow: visible;
-    margin-right:45px;
     background-color:palevioletred;
-    border:none;
-    width:45x;
-    height:35px;
-    border-radius:7x;
-    text-align:left;
-    
+    border:palevioletred;
 }
+
 #chartdiv {
     margin-bottom:20px;
 }
+
 .line {
     height:20px;
     width:20px;
 }
+
 #wait{
     color: lightgrey;
     font-family: 'Lobster', cursive;
@@ -60,6 +57,7 @@ body{
   content: "\2026"; /* ascii code for the ellipsis character */
   width: 0px;
 }
+
 @keyframes ellipsis {
     to {
         width:20px;
@@ -70,8 +68,14 @@ body{
     width: 20px;    
   }
 }
+.input-group-btn {
+    font-size:0;
+    white-space: nowrap;
+}
+
 .submitButton:hover {
-    background-color:mediumpurple
+    background-color:mediumpurple;
+    border-color:mediumpurple;
 }
 
 .stock {
@@ -79,6 +83,7 @@ body{
     border:1px solid palevioletred;
     border-left-width:5px;
 }
+
 .fa-arrow-up {
     color:mediumpurple;
     margin-top:30px;
@@ -91,10 +96,14 @@ body{
     position:center;
     font-size: 70px;
 }
+
 .stock:hover {
     border-color:mediumpurple;
 }
 
+.noData {
+    font-family: 'Lobster', cursive;
+}
 h1 {
     color:palevioletred;
 }

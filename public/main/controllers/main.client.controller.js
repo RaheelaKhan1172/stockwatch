@@ -5,6 +5,7 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
       $scope.stockData = {
           stock:''
       };
+      
       var chartFixed = false;
       
       $scope.dataLoaded = false;
@@ -25,7 +26,10 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
               $scope.currentStocks.splice($scope.currentStocks.indexOf(data.stock),1);
               removeFromGraph(data.stock);
           } else {
-              $scope.currentStocks.push(data.stock.toUpperCase()) ; 
+              if ($scope.currentStocks.indexOf(data.stock.toUpperCase()) === -1) {
+                $scope.currentStocks.push(data.stock.toUpperCase()) ; 
+                search(data.stock.toUpperCase());
+              }
               console.log('scope currentstocks', $scope.currentStocks);
           }
           console.log('the client data', $scope.currentStocks);
@@ -45,18 +49,19 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
       
       $scope.sendStockRequest = function() {
           if (!chartFixed) {
-                  console.log('hmhmhm');
                   $scope.noData = false;
                   $scope.dataLoaded = false;
            }
           
           if ($scope.currentStocks.indexOf($scope.stockData.stock.toUpperCase()) === -1) {
+              
             var message = {
             stock: $scope.stockData.stock  
           };
           
     //      console.log('message in client',message);
           Socket.emit('theCurrentStocks', message);
+              
           }
       };
       
@@ -256,16 +261,16 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
           
       }
       
-      $scope.search = function() {
-       if ($scope.currentStocks.indexOf($scope.stockData.stock.toUpperCase()) === -1) {      
-          var stock = new Stocks($scope.stockData);
+      var search = function(data) {
+          console.log('data',$scope.stockData);
+          var stock = new Stocks({stock:data});
+           console.log('the stock', stock);
           stock.$save(function(response) {
               console.log('in search',response);
               fixData(response.toSend);
           }, function(error) {
               $scope.error = error.data.message;
           });
-       }
       };
     
     // will only occur on initial page load to load data from d.b and display on graph
@@ -282,7 +287,7 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
                 splitData(response.data.tempArr);
             } else {
                 $scope.noData = true;
-                $scope.dataLoaded=true; //so loading goes away, no data avail
+                $scope.dataLoaded = true; //so loading goes away, no data avail
             } 
         }, function(error) {
             $scope.error = error.data.message;
