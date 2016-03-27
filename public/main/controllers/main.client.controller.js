@@ -24,7 +24,7 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
           console.log(data)
           if (data.removed) {
               $scope.currentStocks.splice($scope.currentStocks.indexOf(data.stock),1);
-           //   removeFromGraph(data.stock);
+              removeFromGraph(data.stock);
               deleteStock(data);
           } else {
               if ($scope.currentStocks.indexOf(data.stock.toUpperCase()) === -1) {
@@ -307,7 +307,9 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
             headers: {"Content-Type": "application/json;charset=utf-8"}
         }).then(function(response) {
             console.log('in deleteStock',response,response.data.Symbol);
-            removeFromGraph(response.data.Symbol)
+           // if (response.data !== null) {
+             //   removeFromGraph(response.data.Symbol);
+        //    }
            // stockRemoved(response.data.Symbol);
         }, function(error) {
             $scope.error = error.data.message;
