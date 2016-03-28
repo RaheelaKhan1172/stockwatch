@@ -37,6 +37,15 @@ body{
 #chartdiv {
     margin-bottom:20px;
 }
+.alertError {
+    background-color:lightcoral;
+    margin-left:-75px;
+    margin-top:-30px;
+    border-radius:10px;
+}
+.texterror {
+    color:darkred;
+}
 
 .line {
     height:20px;

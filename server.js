@@ -5,6 +5,6 @@ var mongoose = require('./config/mongoose'),
 
 var db = mongoose();
 var app = express();
-app.listen(3030, "0.0.0.0");
+app.listen(process.env.PORT ||  3030);
 
 module.exports = app;

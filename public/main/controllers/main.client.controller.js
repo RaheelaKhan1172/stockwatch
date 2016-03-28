@@ -1,5 +1,5 @@
-angular.module('main').controller('MainController', ['$scope', '$http','Stocks', 'Socket',
-  function($scope,$http,Stocks,Socket) {
+angular.module('main').controller('MainController', ['$scope','$http','Stocks', 'Socket', '$timeout',
+  function($scope,$http,Stocks,Socket,$timeout) {
 
       
       $scope.stockData = {
@@ -10,15 +10,23 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
       
       $scope.dataLoaded = false;
       $scope.noData = false;
+      $scope.placeholder = 'Add Stock Symbol';
+     
       
-      /* ..
+      $scope.currentStocks = [];
+
+
+      var timeItOut = function() {
+          $timeout(function() {
+              $scope.error = '';
+          }, 4000);
+      };
+      
+       /* ..
         ..
         Socket 
         
         .. */
-      
-      $scope.currentStocks = [];
-
       
       Socket.on('theCurrentStocks', function(data) {
           console.log(data)
@@ -28,8 +36,10 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
               deleteStock(data);
           } else {
               if ($scope.currentStocks.indexOf(data.stock.toUpperCase()) === -1) {
-                $scope.currentStocks.push(data.stock.toUpperCase()) ; 
-                search(data.stock.toUpperCase());
+                
+                if (search(data.stock.toUpperCase())) {
+                    $scope.currentStocks.push(data.stock.toUpperCase()) ; 
+                }
               }
               console.log('scope currentstocks', $scope.currentStocks);
           }
@@ -62,6 +72,7 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
     //      console.log('message in client',message);
           Socket.emit('theCurrentStocks', message);
               
+              
           }
       };
       
@@ -75,7 +86,7 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
       
       var removeFromGraph = function(data) {
           console.log('datasets', chart.dataSets,chart.dataSets[0].title,'data to remove', data);
-          
+          var ind = 0;
           for (var i = 0; i < chart.dataSets.length; i++) {
               if (chart.dataSets[i].title === data) {
                   chart.dataSets.splice(i,1);
@@ -86,7 +97,9 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
             chartFixed = false;  
           };
           console.log('result', chart.dataSets);
+          
           chart.write("chartdiv");
+          
           if (chart.dataSets.length === 1) {
               fixGraph(chart.dataSets[0].dataProvider);
           }
@@ -96,6 +109,10 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
             chartFixed = true;
             $scope.dataLoaded = true;
             $scope.noData = false;
+            $scope.stockData.stock = null;
+                
+            
+            $scope.placeholder = "Add Stock Symbol";
    //       console.log('the data',chartData)
          chart = AmCharts.makeChart("chartdiv", {
             "type":"stock",
@@ -198,6 +215,7 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
       }; 
       
       var fixMultGraph = function(chartData) {
+          $scope.stockData.stock = null;
       //    console.log('chartData in fix mult graph',chartData);
           var data = {
               "title": chartData[0].symb,
@@ -272,7 +290,9 @@ angular.module('main').controller('MainController', ['$scope', '$http','Stocks',
               console.log('in search',response);
               fixData(response.toSend);
           }, function(error) {
+              $scope.dataLoaded = true;
               $scope.error = error.data.message;
+              timeItOut();
           });
       };
     
