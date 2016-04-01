@@ -98,12 +98,12 @@ exports.search = function(req,res,extra) {
         }
     }
     
-    
+      
     console.log(searchItem,html,searchItem.length);
     var date = new Date();
     date = date.toISOString();
     date = date.slice(0,date.lastIndexOf('T'));
-    var oldYear = (date.slice(0,4)-1) + date.slice(4,8) + (date.slice(8)-4);
+    var oldYear = (date.slice(0,4)-1) + date.slice(4,8) + ((date.slice(8) < 5)? 04 - date.slice(8) : date.slice(8)-4);
     console.log(date,oldYear);
     
     var url = '';
@@ -132,6 +132,7 @@ exports.search = function(req,res,extra) {
            
            }
         }
+                console.log(response,'the response');
                 console.log('the length', length,'searchitem',searchItem.length);
            if (length === undefined) {
                res.status(400).send({

@@ -3,4 +3,5 @@ bower_components
 .bowerrc
 .env.local
 .env
+*.swp
 Makefile
