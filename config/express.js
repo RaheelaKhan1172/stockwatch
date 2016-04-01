@@ -1,7 +1,8 @@
 var http = require('http'),
     socketio = require('socket.io'),
     express = require('express'),
-    bodyParser = require('body-parser');
+    bodyParser = require('body-parser'),
+    compress = require('compression');
 
 module.exports = function() {
     console.log('hi hi hi');
@@ -9,6 +10,9 @@ module.exports = function() {
   var server = http.createServer(app);
   var io = socketio.listen(server);
   
+  if (process.env.NODE_ENV === 'production') {
+    app.use(compress());
+  } 
 
   app.use(bodyParser.urlencoded({
       extended:true
